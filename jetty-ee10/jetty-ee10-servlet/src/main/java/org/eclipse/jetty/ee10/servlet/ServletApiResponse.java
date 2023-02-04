@@ -539,6 +539,9 @@ public class ServletApiResponse implements HttpServletResponse
     @Override
     public void resetBuffer()
     {
+        if (isCommitted())
+            throw new IllegalStateException("Committed");
+
         _response.getHttpOutput().resetBuffer();
         _response.getHttpOutput().reopen();
     }

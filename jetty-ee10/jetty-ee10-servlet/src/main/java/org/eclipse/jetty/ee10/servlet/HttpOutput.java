@@ -686,6 +686,7 @@ public class HttpOutput extends ServletOutputStream implements Runnable
                 throw t;
             }
         }
+        _channelState.completeResponse();
     }
 
     private void checkWritable() throws EofException
