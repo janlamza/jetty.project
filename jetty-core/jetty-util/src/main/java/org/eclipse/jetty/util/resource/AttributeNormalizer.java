@@ -57,8 +57,6 @@ public class AttributeNormalizer
     private static final Logger LOG = LoggerFactory.getLogger(AttributeNormalizer.class);
     private static final Pattern __propertyPattern = Pattern.compile("(?<=[^$]|^)\\$\\{([^}]*)\\}");
 
-    private final ResourceFactory resourceFactory;
-
     private static class Attribute
     {
         final String key;
@@ -202,9 +200,8 @@ public class AttributeNormalizer
     private final List<PathAttribute> paths = new ArrayList<>();
     private final List<URIAttribute> uris = new ArrayList<>();
 
-    public AttributeNormalizer(ResourceFactory resourceFactory, Resource baseResource)
+    public AttributeNormalizer(Resource baseResource)
     {
-        this.resourceFactory = resourceFactory;
         if (baseResource == null)
             throw new IllegalArgumentException("No base resource!");
 
@@ -417,9 +414,12 @@ public class AttributeNormalizer
                 try
                 {
                     String uri = prefix + attr.value + suffix;
-                    Resource resource = resourceFactory.newResource(uri);
-                    if (resource.exists())
-                        return uri;
+                    try (ResourceFactory.Closeable resourceFactory = ResourceFactory.closeable())
+                    {
+                        Resource resource = resourceFactory.newResource(uri);
+                        if (resource.exists())
+                            return uri;
+                    }
                 }
                 catch (Exception ex)
                 {

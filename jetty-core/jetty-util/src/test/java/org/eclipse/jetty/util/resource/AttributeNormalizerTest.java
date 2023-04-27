@@ -381,7 +381,7 @@ public class AttributeNormalizerTest
             }
 
             // Setup normalizer
-            this.normalizer = new AttributeNormalizer(resourceFactory, war);
+            this.normalizer = new AttributeNormalizer(war);
         }
 
         @Override

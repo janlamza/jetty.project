@@ -153,7 +153,7 @@ public class QuickStartDescriptorProcessor extends IterativeDescriptorProcessor 
             default -> values.add(value);
         }
 
-        AttributeNormalizer normalizer = new AttributeNormalizer(ResourceFactory.of(context), context.getBaseResource());
+        AttributeNormalizer normalizer = new AttributeNormalizer(context.getBaseResource());
         // handle values
         switch (name)
         {
