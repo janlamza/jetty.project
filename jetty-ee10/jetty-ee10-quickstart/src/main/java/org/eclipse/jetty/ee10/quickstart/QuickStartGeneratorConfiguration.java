@@ -59,6 +59,7 @@ import org.eclipse.jetty.util.QuotedStringTokenizer;
 import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.resource.AttributeNormalizer;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.xml.XmlAppendable;
 import org.slf4j.Logger;
@@ -168,7 +169,7 @@ public class QuickStartGeneratorConfiguration extends AbstractConfiguration
         // Set some special context parameters
         Resource base = context.getBaseResource();
         base = (base != null ? base.iterator().next() : null);
-        AttributeNormalizer normalizer = new AttributeNormalizer(base);
+        AttributeNormalizer normalizer = new AttributeNormalizer(ResourceFactory.of(context), base);
 
         // The library order
         addContextParamFromAttribute(context, out, ServletContext.ORDERED_LIBS);
