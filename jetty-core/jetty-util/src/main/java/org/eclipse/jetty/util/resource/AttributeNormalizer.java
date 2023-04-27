@@ -417,7 +417,7 @@ public class AttributeNormalizer
                     try (ResourceFactory.Closeable resourceFactory = ResourceFactory.closeable())
                     {
                         Resource resource = resourceFactory.newResource(uri);
-                        if (resource.exists())
+                        if (resource != null && resource.exists())
                             return uri;
                     }
                 }
