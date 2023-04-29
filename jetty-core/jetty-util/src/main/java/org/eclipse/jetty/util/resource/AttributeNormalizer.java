@@ -148,11 +148,18 @@ public class AttributeNormalizer
     private static class URIAttribute extends Attribute
     {
         public final URI uri;
+        public final Resource resource;
 
         public URIAttribute(String key, URI uri, int weight)
         {
+            this(key, uri, weight, null);
+        }
+
+        public URIAttribute(String key, URI uri, int weight, Resource resource)
+        {
             super(key, toCanonicalURI(uri.toASCIIString()), weight);
             this.uri = toCanonicalURI(uri);
+            this.resource = resource;
         }
 
         @Override
@@ -226,8 +233,8 @@ public class AttributeNormalizer
                 rootPaths.add(path);
                 paths.add(new PathAttribute("WAR.path", toCanonicalPath(path), 10));
             }
-            uris.add(new URIAttribute("WAR.uri", warURI, 9)); // preferred encoding
-            uris.add(new URIAttribute("WAR", warURI, 8)); // legacy encoding
+            uris.add(new URIAttribute("WAR.uri", warURI, 9, r)); // preferred encoding
+            uris.add(new URIAttribute("WAR", warURI, 8, r)); // legacy encoding
         }
 
         paths.sort(attrComparator);
@@ -364,9 +371,9 @@ public class AttributeNormalizer
                 if (path.equals(a.path) || Files.isSameFile(path, a.path))
                     return String.format("${%s}", a.key);
             }
-            catch (IOException ignore)
+            catch (IOException x)
             {
-                LOG.trace("IGNORED", ignore);
+                LOG.trace("IGNORED", x);
             }
 
             if (path.startsWith(a.path))
@@ -411,20 +418,29 @@ public class AttributeNormalizer
         {
             if (property.equals(attr.key))
             {
-                try
+                if (attr.resource != null)
                 {
-                    String uri = prefix + attr.value + suffix;
-                    try (ResourceFactory.Closeable resourceFactory = ResourceFactory.closeable())
-                    {
-                        Resource resource = resourceFactory.newResource(uri);
-                        if (resource != null && resource.exists())
-                            return uri;
-                    }
+                    Resource resource = attr.resource.resolve(suffix);
+                    if (resource != null && resource.exists())
+                        return prefix + attr.value + suffix;
                 }
-                catch (Exception ex)
+                else
                 {
-                    if (LOG.isDebugEnabled())
-                        LOG.trace("ignored", ex);
+                    try
+                    {
+                        String uri = prefix + attr.value + suffix;
+                        try (ResourceFactory.Closeable resourceFactory = ResourceFactory.closeable())
+                        {
+                            Resource resource = resourceFactory.newResource(uri);
+                            if (resource != null && resource.exists())
+                                return uri;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        if (LOG.isDebugEnabled())
+                            LOG.trace("ignored", ex);
+                    }
                 }
             }
         }
