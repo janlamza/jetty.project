@@ -414,18 +414,31 @@ public class AttributeNormalizer
         if (property == null)
             return null;
 
-        for (URIAttribute attr : uris)
+        // Look for URI matches
+        List<URIAttribute> matches = uris.stream().filter(a -> property.equals(a.key)).toList();
+
+        // If there is a single URI match
+        if (matches.size() == 1)
+        {
+            // use it without checking if it exists
+            return prefix + matches.get(0).value + suffix;
+        }
+
+        // try checking the URI matches for existence
+        for (URIAttribute attr : matches)
         {
             if (property.equals(attr.key))
             {
                 if (attr.resource != null)
                 {
+                    // match has a resource, so test if it can resolve
                     Resource resource = attr.resource.resolve(suffix);
                     if (resource != null && resource.exists())
                         return prefix + attr.value + suffix;
                 }
                 else
                 {
+                    // the match doesn't have a resource, so potentially expensive check to see if it exists
                     try
                     {
                         String uri = prefix + attr.value + suffix;
@@ -445,6 +458,7 @@ public class AttributeNormalizer
             }
         }
 
+        // Check for path matches
         for (PathAttribute attr : paths)
         {
             if (property.equals(attr.key))
